@@ -8,7 +8,7 @@ import (
 type Bellman struct {
 	eventObserver chan Event
 	ctx           context.Context
-	w             sync.WaitGroup
+	closed        chan struct{}
 }
 
 func NewBellman(ctx context.Context) *Bellman {
@@ -19,8 +19,8 @@ func NewBellman(ctx context.Context) *Bellman {
 	b := &Bellman{
 		ctx:           ctx,
 		eventObserver: make(chan Event),
+		closed:        make(chan struct{}),
 	}
-	b.w.Add(1)
 
 	go func() {
 		var m sync.RWMutex
@@ -39,40 +39,42 @@ func NewBellman(ctx context.Context) *Bellman {
 						for _, subscriber := range subscribers {
 							select {
 							case <-subscriber.ctx.Done():
+								subscriber.Unsub(b)
+								continue subsLoop
+							case <-subscriber.closed:
 								continue subsLoop
 							case subscriber.ch <- e.Payload:
 							}
-
 						}
 						m.RUnlock()
 					}()
 					break
 				case SIGSUB:
 					m.Lock()
-					b.w.Add(1)
 					subscribers[e.Payload.(*Subscriber).Id] = e.Payload.(*Subscriber)
 					m.Unlock()
 					break
 				case SIGUNSUB:
 					m.Lock()
 					if s, ok := subscribers[e.Payload.(string)]; ok {
-						b.w.Done()
 						close(s.ch)
+						close(s.closed)
 						delete(subscribers, e.Payload.(string))
 					}
 					m.Unlock()
 					break
 				case SIGTERM:
-					b.w.Done()
 					break outer
 				}
 			}
 		}
 
 		for _, subscriber := range subscribers {
-			b.w.Done()
+			close(subscriber.closed)
 			close(subscriber.ch)
 		}
+
+		close(b.closed)
 
 	}()
 
@@ -120,6 +122,6 @@ func (b *Bellman) Close() bool {
 	return true
 }
 
-func (b *Bellman) Wait() {
-	b.w.Wait()
+func (b *Bellman) Done() <-chan struct{} {
+	return b.closed
 }

@@ -7,9 +7,10 @@ import (
 )
 
 type Subscriber struct {
-	ctx context.Context
-	ch  chan interface{}
-	Id  string
+	ctx    context.Context
+	ch     chan interface{}
+	closed chan struct{}
+	Id     string
 }
 
 func NewSubscriber(ctx context.Context) (*Subscriber, error) {
@@ -24,9 +25,10 @@ func NewSubscriber(ctx context.Context) (*Subscriber, error) {
 		return nil, fmt.Errorf("error generating subscriber id :%s", err)
 	}
 	return &Subscriber{
-		ctx: ctx,
-		ch:  make(chan interface{}),
-		Id:  fmt.Sprintf("%x", b),
+		ctx:    ctx,
+		ch:     make(chan interface{}),
+		closed: make(chan struct{}),
+		Id:     fmt.Sprintf("%x", b),
 	}, nil
 }
 
@@ -40,9 +42,10 @@ outer:
 		select {
 		case <-s.ctx.Done():
 			break outer
+		case <-s.closed:
+			break outer
 		case m := <-s.ch:
 			listener(m)
-
 			break
 		}
 	}
