@@ -19,7 +19,7 @@ func NewSubscriber(ctx context.Context) (*Subscriber, error) {
 		ctx = context.Background()
 	}
 
-	b := make([]byte, 16)
+	b := make([]byte, 4)
 	_, err := rand.Read(b)
 	if err != nil {
 		return nil, fmt.Errorf("error generating subscriber id :%s", err)
@@ -34,6 +34,10 @@ func NewSubscriber(ctx context.Context) (*Subscriber, error) {
 
 func (s *Subscriber) Unsub(bellman *Bellman) bool {
 	return bellman.UnSub(s)
+}
+
+func (s *Subscriber) Sub(bellman *Bellman) {
+	bellman.Sub(s)
 }
 
 func (s *Subscriber) Listen(listener func(message interface{})) {

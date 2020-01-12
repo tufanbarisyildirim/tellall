@@ -41,9 +41,10 @@ func NewBellman(ctx context.Context) *Bellman {
 							case <-subscriber.ctx.Done():
 								subscriber.Unsub(b)
 								continue subsLoop
+							case subscriber.ch <- e.Payload:
+								break
 							case <-subscriber.closed:
 								continue subsLoop
-							case subscriber.ch <- e.Payload:
 							}
 						}
 						m.RUnlock()
@@ -90,16 +91,20 @@ func (b *Bellman) Pub(message interface{}) error {
 	return nil
 }
 
-func (b *Bellman) Sub(ctx context.Context) (*Subscriber, error) {
+func (b *Bellman) NewSub(ctx context.Context) (*Subscriber, error) {
 	s, err := NewSubscriber(ctx)
 	if err != nil {
 		return nil, err
 	}
+	b.Sub(s)
+	return s, nil
+}
+
+func (b *Bellman) Sub(subscriber *Subscriber) {
 	b.eventObserver <- Event{
 		Signal:  SIGSUB,
-		Payload: s,
+		Payload: subscriber,
 	}
-	return s, nil
 }
 
 func (b *Bellman) UnSub(subscriber *Subscriber) bool {
