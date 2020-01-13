@@ -39,12 +39,12 @@ func (h *HashTable) Remove(ch chan interface{}) {
 
 func (h *HashTable) Has(ch chan interface{}) bool {
 	h.m.RLock()
+	defer h.m.RUnlock()
 	for _, c := range h.Bucket {
 		if c == ch {
 			return true
 		}
 	}
-	h.m.RUnlock()
 	return false
 }
 
