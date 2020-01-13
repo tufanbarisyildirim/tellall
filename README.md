@@ -17,58 +17,57 @@ then, start using like;
 
 ```go
 package main
-
-import (
-	"context"
-	"fmt"
-	"github.com/tufanbarisyildirim/bellman"
-	"log"
-	"time"
-)
-
-func main() {
-
-	b, err := bellman.NewPublisher(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	subscriber1, err := b.NewSub(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	subscriber2, err := b.NewSub(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go subscriber1.Listen(func(message interface{}, subscriber *bellman.Subscriber) {
-		fmt.Printf("Sub1[%s] got message  %s from Pub[%s]\n", subscriber.Id, message, subscriber.Publisher.Id)
-	})
-
-	go subscriber2.Listen(func(message interface{}, subscriber *bellman.Subscriber) {
-		fmt.Printf("Sub2[%s] got message  %s from Pub[%s]\n", subscriber.Id, message, subscriber.Publisher.Id)
-	})
-
-	go func() {
-		for i := 0; i <= 3; i++ {
-			time.Sleep(1 * time.Second)
-			_ = b.Pub(fmt.Sprintf("1: %d", i))
-		}
-	}()
-
-	go func() {
-		for i := 0; i <= 5; i++ {
-			time.Sleep(1 * time.Second)
-			_ = b.Pub(fmt.Sprintf("2: %d", i))
-		}
-		b.Close()
-	}()
-
-	<-b.Done()
-}
-
+ 
+ import (
+ 	"context"
+ 	"fmt"
+ 	"github.com/tufanbarisyildirim/bellman/broadcast"
+ 	"log"
+ 	"time"
+ )
+ 
+ func main() {
+ 
+ 	b, err := broadcast.NewPublisher(nil)
+ 	if err != nil {
+ 		log.Fatal(err)
+ 	}
+ 
+ 	subscriber1, err := b.NewSub(context.Background())
+ 	if err != nil {
+ 		log.Fatal(err)
+ 	}
+ 
+ 	subscriber2, err := b.NewSub(context.Background())
+ 	if err != nil {
+ 		log.Fatal(err)
+ 	}
+ 
+ 	go subscriber1.Listen(func(message interface{}, subscriber *broadcast.Subscriber) {
+ 		fmt.Printf("Sub1[%s] got message  %s from Pub[%s]\n", subscriber.Id, message, subscriber.Publisher.Id)
+ 	})
+ 
+ 	go subscriber2.Listen(func(message interface{}, subscriber *broadcast.Subscriber) {
+ 		fmt.Printf("Sub2[%s] got message  %s from Pub[%s]\n", subscriber.Id, message, subscriber.Publisher.Id)
+ 	})
+ 
+ 	go func() {
+ 		for i := 0; i <= 3; i++ {
+ 			time.Sleep(1 * time.Second)
+ 			_ = b.Pub(fmt.Sprintf("1: %d", i))
+ 		}
+ 	}()
+ 
+ 	go func() {
+ 		for i := 0; i <= 5; i++ {
+ 			time.Sleep(1 * time.Second)
+ 			_ = b.Pub(fmt.Sprintf("2: %d", i))
+ 		}
+ 		b.Close()
+ 	}()
+ 
+ 	<-b.Done()
+ }
 ```
 
 ### Output
