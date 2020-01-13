@@ -7,13 +7,14 @@ import (
 )
 
 type Subscriber struct {
-	ctx    context.Context
-	ch     chan interface{}
-	closed chan struct{}
-	Id     string
+	ctx       context.Context
+	ch        chan interface{}
+	closed    chan struct{}
+	Id        string
+	Publisher *Publisher
 }
 
-func NewSubscriber(ctx context.Context) (*Subscriber, error) {
+func NewSubscriber(ctx context.Context, publisher *Publisher) (*Subscriber, error) {
 
 	if ctx == nil {
 		ctx = context.Background()
@@ -25,22 +26,23 @@ func NewSubscriber(ctx context.Context) (*Subscriber, error) {
 		return nil, fmt.Errorf("error generating subscriber id :%s", err)
 	}
 	return &Subscriber{
-		ctx:    ctx,
-		ch:     make(chan interface{}),
-		closed: make(chan struct{}),
-		Id:     fmt.Sprintf("%x", b),
+		ctx:       ctx,
+		ch:        make(chan interface{}),
+		closed:    make(chan struct{}),
+		Id:        fmt.Sprintf("%x", b),
+		Publisher: publisher,
 	}, nil
 }
 
-func (s *Subscriber) Unsub(bellman *Bellman) bool {
-	return bellman.UnSub(s)
+func (s *Subscriber) Unsub(bellman *Publisher) bool {
+	return bellman.Kick(s)
 }
 
-func (s *Subscriber) Sub(bellman *Bellman) {
+func (s *Subscriber) Sub(bellman *Publisher) {
 	bellman.Sub(s)
 }
 
-func (s *Subscriber) Listen(listener func(message interface{})) {
+func (s *Subscriber) Listen(listener func(message interface{}, subscriber *Subscriber)) {
 outer:
 	for {
 		select {
@@ -49,7 +51,7 @@ outer:
 		case <-s.closed:
 			break outer
 		case m := <-s.ch:
-			listener(m)
+			listener(m, s)
 			break
 		}
 	}

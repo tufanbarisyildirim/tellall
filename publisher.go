@@ -2,24 +2,34 @@ package bellman
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"sync"
 )
 
-type Bellman struct {
+type Publisher struct {
 	eventObserver chan Event
 	ctx           context.Context
 	closed        chan struct{}
+	Id            string
 }
 
-func NewBellman(ctx context.Context) *Bellman {
+func NewPublisher(ctx context.Context) (*Publisher, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	b := &Bellman{
+	randBytes := make([]byte, 8)
+	_, err := rand.Read(randBytes)
+	if err != nil {
+		return nil, fmt.Errorf("error generating subscriber id :%s", err)
+	}
+
+	p := &Publisher{
 		ctx:           ctx,
 		eventObserver: make(chan Event),
 		closed:        make(chan struct{}),
+		Id:            fmt.Sprintf("%x", randBytes),
 	}
 
 	go func() {
@@ -30,16 +40,16 @@ func NewBellman(ctx context.Context) *Bellman {
 			select {
 			case <-ctx.Done():
 				break outer
-			case e := <-b.eventObserver:
+			case e := <-p.eventObserver:
 				switch e.Signal {
 				case SIGPUB:
 					go func() {
-						m.RLock()
+						m.Lock()
 					subsLoop:
 						for _, subscriber := range subscribers {
 							select {
 							case <-subscriber.ctx.Done():
-								subscriber.Unsub(b)
+								subscriber.Unsub(p)
 								continue subsLoop
 							case subscriber.ch <- e.Payload:
 								break
@@ -47,7 +57,7 @@ func NewBellman(ctx context.Context) *Bellman {
 								continue subsLoop
 							}
 						}
-						m.RUnlock()
+						m.Unlock()
 					}()
 					break
 				case SIGSUB:
@@ -75,15 +85,15 @@ func NewBellman(ctx context.Context) *Bellman {
 			close(subscriber.ch)
 		}
 
-		close(b.closed)
+		close(p.closed)
 
 	}()
 
-	return b
+	return p,nil
 }
 
-func (b *Bellman) Pub(message interface{}) error {
-	b.eventObserver <- Event{
+func (p *Publisher) Pub(message interface{}) error {
+	p.eventObserver <- Event{
 		Signal:  SIGPUB,
 		Payload: message,
 	}
@@ -91,42 +101,42 @@ func (b *Bellman) Pub(message interface{}) error {
 	return nil
 }
 
-func (b *Bellman) NewSub(ctx context.Context) (*Subscriber, error) {
-	s, err := NewSubscriber(ctx)
+func (p *Publisher) NewSub(ctx context.Context) (*Subscriber, error) {
+	s, err := NewSubscriber(ctx, p)
 	if err != nil {
 		return nil, err
 	}
-	b.Sub(s)
+	p.Sub(s)
 	return s, nil
 }
 
-func (b *Bellman) Sub(subscriber *Subscriber) {
-	b.eventObserver <- Event{
+func (p *Publisher) Sub(subscriber *Subscriber) {
+	p.eventObserver <- Event{
 		Signal:  SIGSUB,
 		Payload: subscriber,
 	}
 }
 
-func (b *Bellman) UnSub(subscriber *Subscriber) bool {
-	return b.UnSubId(subscriber.Id)
+func (p *Publisher) Kick(subscriber *Subscriber) bool {
+	return p.KickId(subscriber.Id)
 }
 
-func (b *Bellman) UnSubId(subscriberId string) bool {
-	b.eventObserver <- Event{
+func (p *Publisher) KickId(subscriberId string) bool {
+	p.eventObserver <- Event{
 		Signal:  SIGUNSUB,
 		Payload: subscriberId,
 	}
 	return true
 }
 
-func (b *Bellman) Close() bool {
-	b.eventObserver <- Event{
+func (p *Publisher) Close() bool {
+	p.eventObserver <- Event{
 		Signal:  SIGTERM,
 		Payload: nil,
 	}
 	return true
 }
 
-func (b *Bellman) Done() <-chan struct{} {
-	return b.closed
+func (p *Publisher) Done() <-chan struct{} {
+	return p.closed
 }
