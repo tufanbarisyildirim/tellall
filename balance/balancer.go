@@ -16,15 +16,28 @@ type Balancer struct {
 	Consumers     []*Consumer
 	m             *sync.RWMutex
 	load          uint64
+	Algorithm     BalancingAlgorithm
+	rankFunc      func() *Consumer
 }
 
-func NewBalancer() *Balancer {
-	return &Balancer{
+func NewBalancer(algorithm BalancingAlgorithm) *Balancer {
+	b := &Balancer{
 		PublisherChan: make(chan interface{}),
 		Consumers:     []*Consumer{},
 		m:             &sync.RWMutex{},
 		load:          0,
+		Algorithm:     algorithm,
+		rankFunc:      nil,
 	}
+
+	//decide the ranking func on init instead of checking on every message
+	switch b.Algorithm {
+	case RoundRobin:
+		b.rankFunc = b.GetRankedRoundRobin
+	}
+
+	return b
+
 }
 
 func (p *Balancer) AddConsumer(consumer *Consumer) {
@@ -47,6 +60,10 @@ func (p *Balancer) RemoveConsumer(consumer *Consumer) {
 }
 
 func (p *Balancer) GetRanked() *Consumer {
+	return p.rankFunc()
+}
+
+func (p *Balancer) GetRankedRoundRobin() *Consumer {
 	p.m.RLock()
 	defer p.m.RUnlock()
 	return p.Consumers[ atomic.LoadUint64(&p.load)%uint64(len(p.Consumers))]
