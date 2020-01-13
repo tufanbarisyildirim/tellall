@@ -1,5 +1,5 @@
-# bellman
-Bellman is a golang channel library helps you to;
+# tellall
+Tellall (Bellman) is a golang channel library helps you to;
 
 - [x] easily implement pub/sub mechanism
 - [x] distribute messages between channels using consistent hash algorithm
@@ -21,7 +21,7 @@ package main
  import (
  	"context"
  	"fmt"
- 	"github.com/tufanbarisyildirim/bellman/broadcast"
+ 	"github.com/tufanbarisyildirim/tellall/broadcast"
  	"log"
  	"time"
  )
@@ -100,7 +100,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/tufanbarisyildirim/bellman/dht"
+	"github.com/tufanbarisyildirim/tellall/dht"
 )
 
 func main() {
