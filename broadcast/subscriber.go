@@ -1,4 +1,4 @@
-package bellman
+package broadcast
 
 import (
 	"context"
