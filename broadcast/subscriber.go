@@ -34,12 +34,12 @@ func NewSubscriber(ctx context.Context, publisher *Publisher) (*Subscriber, erro
 	}, nil
 }
 
-func (s *Subscriber) Unsub(bellman *Publisher) bool {
-	return bellman.Kick(s)
+func (s *Subscriber) Unsub(publisher *Publisher) bool {
+	return publisher.Kick(s)
 }
 
-func (s *Subscriber) Sub(bellman *Publisher) {
-	bellman.Sub(s)
+func (s *Subscriber) Sub(publisher *Publisher) {
+	publisher.Sub(s)
 }
 
 func (s *Subscriber) Listen(listener func(message interface{}, subscriber *Subscriber)) {

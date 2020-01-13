@@ -1,4 +1,4 @@
-module github.com/tufanbarisyildirim/bellman
+module github.com/tufanbarisyildirim/tellall
 
 go 1.13
 

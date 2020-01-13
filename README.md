@@ -10,7 +10,7 @@ Tellall (Bellman) is a golang channel library helps you to;
 First pull the library
 
 ```shell script
- go get github.com/tufanbarisyildirim/bellman
+ go get github.com/tufanbarisyildirim/tellall
 ```
 
 then, start using like; 
