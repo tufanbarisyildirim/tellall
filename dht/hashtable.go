@@ -5,23 +5,29 @@ import jump "github.com/lithammer/go-jump-consistent-hash"
 
 type HashTable struct {
 	Bucket []chan interface{}
-	m      *sync.Mutex
+	m      *sync.RWMutex
 }
 
 func NewHashTable() *HashTable {
 	return &HashTable{
 		Bucket: make([]chan interface{}, 0),
-		m:      &sync.Mutex{},
+		m:      &sync.RWMutex{},
 	}
 }
 
 func (h *HashTable) Add(ch chan interface{}) {
+	if h.Has(ch) {
+		return
+	}
 	h.m.Lock()
 	h.Bucket = append(h.Bucket, ch)
 	h.m.Unlock()
 }
 
 func (h *HashTable) Remove(ch chan interface{}) {
+	if !h.Has(ch) {
+		return
+	}
 	h.m.Lock()
 	i := 0
 	for _, c := range h.Bucket {
@@ -32,6 +38,17 @@ func (h *HashTable) Remove(ch chan interface{}) {
 	}
 	h.Bucket = h.Bucket[:i]
 	h.m.Unlock()
+}
+
+func (h *HashTable) Has(ch chan interface{}) bool {
+	h.m.RLock()
+	for _, c := range h.Bucket {
+		if c == ch {
+			return true
+		}
+	}
+	h.m.RUnlock()
+	return false
 }
 
 func (h *HashTable) Find(num uint64) chan interface{} {
