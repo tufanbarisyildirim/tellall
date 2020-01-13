@@ -4,6 +4,9 @@ Tellall (Bellman) is a golang channel library helps you to;
 - [x] easily implement pub/sub mechanism
 - [x] distribute messages between channels using consistent hash algorithm
 - [ ] balance messages between channels using any [balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques/)
+    - [x] round-robin
+    - [ ] weighted round robin
+    - [ ] fairness load balancing 
 
 
 ### Pub / Sub
@@ -95,6 +98,8 @@ Sub1[1b63a6a4] got message  2: 5 from Pub[183eeb4d23e3e34a]
 ```
 
 ## Distributed Hash Table
+With distributed consistent hashing you always get same target with same key.
+
 ```go
 package main
 
@@ -145,7 +150,7 @@ func main() {
 
 }
 
-```
+````
 
 ### Output:
 ```shell script
@@ -162,4 +167,75 @@ got message 9 to ch3
 ch1 total message  5
 ch2 total message  2
 ch3 total message  3
+```
+
+
+## Balancing
+Tellall supports channel balancing too
+
+### Round-Robin Balancing
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/tufanbarisyildirim/tellall/balance"
+)
+
+func main() {
+
+	balancer := balance.NewBalancer()
+	consumer1 := balance.NewConsumer(1)
+	consumer2 := balance.NewConsumer(1)
+	consumer3 := balance.NewConsumer(1)
+	balancer.AddConsumer(consumer1)
+	balancer.AddConsumer(consumer2)
+	balancer.AddConsumer(consumer3)
+
+	consumer1Count := 0
+	consumer2Count := 0
+	consumer3Count := 0
+
+	go func() {
+		for {
+			m := <-consumer1.OutChan
+			consumer1Count++
+			fmt.Println(m)
+		}
+	}()
+
+	go func() {
+		for {
+			m := <-consumer2.OutChan
+			consumer2Count++
+			fmt.Println(m)
+		}
+	}()
+
+	go func() {
+		for {
+			m := <-consumer3.OutChan
+			consumer3Count++
+			fmt.Println(m)
+		}
+	}()
+
+	for i := 0; i <= 100000; i++ {
+		balancer.Push("message")
+	}
+
+	fmt.Printf("consumer1 : %d\n", consumer1Count)
+	fmt.Printf("consumer2 : %d\n", consumer2Count)
+	fmt.Printf("consumer3 : %d\n", consumer3Count)
+
+}
+```
+
+
+
+### Output
+```shell script
+consumer1 : 33333
+consumer2 : 33334
+consumer3 : 33334
 ```
