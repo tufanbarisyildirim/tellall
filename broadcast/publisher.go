@@ -2,8 +2,7 @@ package broadcast
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
+	"github.com/tufanbarisyildirim/tellall/utils"
 	"sync"
 )
 
@@ -19,17 +18,11 @@ func NewPublisher(ctx context.Context) (*Publisher, error) {
 		ctx = context.Background()
 	}
 
-	randBytes := make([]byte, 8)
-	_, err := rand.Read(randBytes)
-	if err != nil {
-		return nil, fmt.Errorf("error generating subscriber id :%s", err)
-	}
-
 	p := &Publisher{
 		ctx:           ctx,
 		eventObserver: make(chan Event),
 		closed:        make(chan struct{}),
-		Id:            fmt.Sprintf("%x", randBytes),
+		Id:            utils.RandHexId(8),
 	}
 
 	go func() {
@@ -89,7 +82,7 @@ func NewPublisher(ctx context.Context) (*Publisher, error) {
 
 	}()
 
-	return p,nil
+	return p, nil
 }
 
 func (p *Publisher) Pub(message interface{}) error {

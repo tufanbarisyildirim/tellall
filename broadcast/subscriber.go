@@ -2,8 +2,7 @@ package broadcast
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
+	"github.com/tufanbarisyildirim/tellall/utils"
 )
 
 type Subscriber struct {
@@ -20,16 +19,11 @@ func NewSubscriber(ctx context.Context, publisher *Publisher) (*Subscriber, erro
 		ctx = context.Background()
 	}
 
-	b := make([]byte, 4)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, fmt.Errorf("error generating subscriber id :%s", err)
-	}
 	return &Subscriber{
 		ctx:       ctx,
 		ch:        make(chan interface{}),
 		closed:    make(chan struct{}),
-		Id:        fmt.Sprintf("%x", b),
+		Id:        utils.RandHexId(4),
 		Publisher: publisher,
 	}, nil
 }
