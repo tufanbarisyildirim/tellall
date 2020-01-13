@@ -16,9 +16,6 @@ func NewHashTable() *HashTable {
 }
 
 func (h *HashTable) Add(ch chan interface{}) {
-	if h.Has(ch) {
-		return
-	}
 	h.m.Lock()
 	h.Bucket = append(h.Bucket, ch)
 	h.m.Unlock()
