@@ -1,6 +1,7 @@
 package balance
 
 import (
+	"sort"
 	"sync"
 	"sync/atomic"
 )
@@ -35,14 +36,21 @@ func NewBalancer(algorithm BalancingAlgorithm) *Balancer {
 	case RoundRobin:
 		b.rankFunc = b.GetRankedRoundRobin
 	}
-
 	return b
 
 }
 
 func (p *Balancer) AddConsumer(consumer *Consumer) {
 	p.m.Lock()
-	p.Consumers = append(p.Consumers, consumer)
+
+	for i := int32(0); i < consumer.Weight; i++ {
+		p.Consumers = append(p.Consumers, consumer)
+	}
+
+	sort.Slice(p.Consumers, func(i, j int) bool {
+		return p.Consumers[i].Weight < p.Consumers[j].Weight
+	})
+
 	p.m.Unlock()
 }
 

@@ -18,11 +18,16 @@ func NewPublisher(ctx context.Context) (*Publisher, error) {
 		ctx = context.Background()
 	}
 
+	id, err := utils.RandHexId(8)
+	if err != nil {
+		return nil, err
+	}
+
 	p := &Publisher{
 		ctx:           ctx,
 		eventObserver: make(chan Event),
 		closed:        make(chan struct{}),
-		Id:            utils.RandHexId(8),
+		Id:            id,
 	}
 
 	go func() {

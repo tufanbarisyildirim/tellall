@@ -12,13 +12,28 @@ type Consumer struct {
 	load    uint64
 }
 
-func NewConsumer(weight int32) *Consumer {
-	return &Consumer{
-		Id:      utils.RandHexId(4),
-		OutChan: make(chan interface{}),
-		Weight:  weight,
-		load:    0,
+func NewConsumer() (*Consumer, error) {
+	id, err := utils.RandHexId(4)
+
+	if err != nil {
+		return nil, err
 	}
+
+	return &Consumer{
+		Id:      id,
+		OutChan: make(chan interface{}),
+		Weight:  1,
+		load:    0,
+	}, nil
+}
+
+func NewWeightedConsumer(weight int32) (*Consumer, error) {
+	c, err := NewConsumer()
+	if err != nil {
+		return nil, err
+	}
+	c.Weight = weight
+	return c, nil
 }
 
 func (c *Consumer) Push(data interface{}) {

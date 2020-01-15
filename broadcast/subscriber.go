@@ -19,11 +19,16 @@ func NewSubscriber(ctx context.Context, publisher *Publisher) (*Subscriber, erro
 		ctx = context.Background()
 	}
 
+	id, err := utils.RandHexId(4)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Subscriber{
 		ctx:       ctx,
 		ch:        make(chan interface{}),
 		closed:    make(chan struct{}),
-		Id:        utils.RandHexId(4),
+		Id:        id,
 		Publisher: publisher,
 	}, nil
 }

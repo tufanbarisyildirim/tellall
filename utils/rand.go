@@ -5,8 +5,11 @@ import (
 	"fmt"
 )
 
-func RandHexId(byteSize int32) string {
+func RandHexId(byteSize int32) (string, error) {
 	b := make([]byte, byteSize)
-	_, _ = rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%x", b), nil
 }

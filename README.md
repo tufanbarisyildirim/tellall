@@ -184,10 +184,10 @@ import (
 
 func main() {
 
-	balancer := balance.NewBalancer()
-	consumer1 := balance.NewConsumer(1)
-	consumer2 := balance.NewConsumer(1)
-	consumer3 := balance.NewConsumer(1)
+	balancer := balance.NewBalancer(balance.RoundRobin)
+	consumer1, _ := balance.NewConsumer()
+	consumer2, _ := balance.NewWeightedConsumer(2)
+	consumer3, _ := balance.NewWeightedConsumer(99)
 	balancer.AddConsumer(consumer1)
 	balancer.AddConsumer(consumer2)
 	balancer.AddConsumer(consumer3)
@@ -198,25 +198,22 @@ func main() {
 
 	go func() {
 		for {
-			m := <-consumer1.OutChan
+			<-consumer1.OutChan
 			consumer1Count++
-			fmt.Println(m)
 		}
 	}()
 
 	go func() {
 		for {
-			m := <-consumer2.OutChan
+			<-consumer2.OutChan
 			consumer2Count++
-			fmt.Println(m)
 		}
 	}()
 
 	go func() {
 		for {
-			m := <-consumer3.OutChan
+			<-consumer3.OutChan
 			consumer3Count++
-			fmt.Println(m)
 		}
 	}()
 
@@ -235,7 +232,7 @@ func main() {
 
 ### Output
 ```shell script
-consumer1 : 33333
-consumer2 : 33334
-consumer3 : 33334
+consumer1 : 980
+consumer2 : 1962
+consumer3 : 97059
 ```
