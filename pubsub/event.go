@@ -1,4 +1,4 @@
-package broadcast
+package pubsub
 
 type Signal int
 
