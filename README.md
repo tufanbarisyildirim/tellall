@@ -3,10 +3,10 @@ Tellall (Bellman) is a golang channel library helps you to;
 
 - [x] easily implement pub/sub mechanism
 - [x] distribute messages between channels using consistent hash algorithm
-- [ ] balance messages between channels using any [balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques/)
+- [ ] balance messages between channels using some [balancing algorithms](https://kemptechnologies.com/load-balancer/load-balancing-algorithms-techniques/)
     - [x] round-robin
     - [x] weighted round robin
-    - [ ] fairness / health-check load balancing 
+    - [ ] agent-based adaptive load balancing
 
 ### Examples
 
