@@ -1,4 +1,4 @@
-# tellall
+# Tell-all
 Tellall (Bellman) is a golang channel library helps you to;
 
 - [x] easily implement pub/sub mechanism
