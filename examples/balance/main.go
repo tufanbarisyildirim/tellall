@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+
+	"github.com/tufanbarisyildirim/balancer"
 	"github.com/tufanbarisyildirim/tellall/balance"
 )
 
 func main() {
 
-	balancer := balance.NewBalancer(balance.RoundRobin)
+	balancer := balance.NewBalancer(&balancer.RoundRobin{})
 	consumer1, _ := balance.NewConsumer()
 	consumer2, _ := balance.NewWeightedConsumer(2)
 	consumer3, _ := balance.NewWeightedConsumer(99)

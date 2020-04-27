@@ -13,3 +13,7 @@ Tellall (Bellman) is a golang channel library helps you to;
 - [Pub/Sub](examples/pubsub/README.md)
 - [Balancing](examples/balance/README.md)
 - [Consistent Hashing](examples/dht/README.md)
+
+
+### Todo:
+Remove hashtable and use tufanbarisyildirim/balancer with Hash policy.

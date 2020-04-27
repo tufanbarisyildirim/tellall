@@ -1,2 +1,4 @@
 github.com/lithammer/go-jump-consistent-hash v1.0.1 h1:RUuBvVsOT4MGzV80RfO7u3YYivqOLbWWz4WpCBemq3Y=
 github.com/lithammer/go-jump-consistent-hash v1.0.1/go.mod h1:Snz99O1UkmvgsOV76Jm7Zu4sokENziqvUCbPztFABIU=
+github.com/tufanbarisyildirim/balancer v0.0.0-20200427160822-c951e2f997b7 h1:XrTBvOqtUobLgf7Ja3xd3Zqt00FityAPxW2zG7DMvQI=
+github.com/tufanbarisyildirim/balancer v0.0.0-20200427160822-c951e2f997b7/go.mod h1:kMVjJg5EMdG7JEAEyhK+K9+TRhcHjBrKssmt4XGJT8U=
